@@ -35,6 +35,7 @@ async function init() {
         console.log("Connecting to Broadcaster...");
         peer = createPeer();
         peer.addTransceiver("video", { direction: "recvonly" });
+        peer.addTransceiver("audio", { direction: "recvonly" })
     }
 }
 
@@ -70,6 +71,7 @@ function handleTrackEvent(e) {
   
         console.log("Adding Remote Track...");
         document.getElementById("video").srcObject = e.streams[0];
+        console.log(e.streams[0])
         console.log("track added");
   
 };

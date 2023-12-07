@@ -10,7 +10,7 @@ import os
 load_dotenv(".env")
 turn_server_username = os.getenv("TURN_SERVER_USERNAME")
 turn_server_password = os.getenv("TURN_SERVER_PASSWORD")
-turn_servers = [
+turn_servers: list[RTCIceServer] = [
     RTCIceServer(
         urls=["turn:a.relay.metered.ca:80"],
         username=turn_server_username,
@@ -62,7 +62,7 @@ async def consumer(websocket: WebSocket):
             if not sender_stream:
                 raise HTTPException(
                     status_code=400, detail="No sender stream available")
-            print(sender_stream)
+            print(f"sender stream is: {sender_stream}")
             pc.addTrack(sender_stream)
 
             answer = await pc.createAnswer()

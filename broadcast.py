@@ -23,7 +23,32 @@ async def consumer(websocket: WebSocket):
         while True:
             params = await websocket.receive_json()
 
-            pc = RTCPeerConnection()
+            pc = RTCPeerConnection({
+                "iceServers": [
+                    {
+                        "urls": "stun:stun.relay.metered.ca:80",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:80",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:80?transport=tcp",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:443",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:443?transport=tcp",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                ], })
             offer = RTCSessionDescription(
                 sdp=params["sdp"], type=params["type"])
 
@@ -57,7 +82,32 @@ async def broadcast(websocket: WebSocket):
             params = await websocket.receive_text()
             params = json.loads(params)
 
-            pc = RTCPeerConnection()
+            pc = RTCPeerConnection({
+                "iceServers": [
+                    {
+                        "urls": "stun:stun.relay.metered.ca:80",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:80",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:80?transport=tcp",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:443",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                    {
+                        "urls": "turn:a.relay.metered.ca:443?transport=tcp",
+                        "username": "4800bcc1d14897cc749c5f50",
+                        "credential": "5oBep3xKuVgMh98x",
+                    },
+                ], })
             pc.on("track", handle_media_stream)
 
             offer = RTCSessionDescription(**params)

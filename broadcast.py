@@ -2,8 +2,39 @@ from fastapi import FastAPI, HTTPException, WebSocket, Request, WebSocketDisconn
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack, MediaStreamTrack
+from aiortc import RTCPeerConnection, RTCSessionDescription, RTCConfiguration, MediaStreamTrack, RTCIceServer
 import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv(".env")
+turn_server_username = os.getenv("TURN_SERVER_USERNAME")
+turn_server_password = os.getenv("TURN_SERVER_PASSWORD")
+turn_servers = [
+    RTCIceServer(
+        urls=["turn:a.relay.metered.ca:80"],
+        username=turn_server_username,
+        credential=turn_server_password,
+    ),
+    RTCIceServer(
+        urls=["turn:a.relay.metered.ca:80?transport=tcp"],
+        username=turn_server_username,
+        credential=turn_server_password,
+    ),
+    RTCIceServer(
+        urls=["turn:a.relay.metered.ca:443"],
+        username=turn_server_username,
+        credential=turn_server_password,
+    ),
+    RTCIceServer(
+        urls=["turn:a.relay.metered.ca:443?transport=tcp"],
+        username=turn_server_username,
+        credential=turn_server_username,
+    ),
+]
+
+# Configure the RTCPeerConnection
+configuration = RTCConfiguration(iceServers=turn_servers)
 
 app = FastAPI()
 
@@ -23,32 +54,7 @@ async def consumer(websocket: WebSocket):
         while True:
             params = await websocket.receive_json()
 
-            pc = RTCPeerConnection({
-                "iceServers": [
-                    {
-                        "urls": "stun:stun.relay.metered.ca:80",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:80",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:80?transport=tcp",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:443",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:443?transport=tcp",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                ], })
+            pc = RTCPeerConnection(configuration=configuration)
             offer = RTCSessionDescription(
                 sdp=params["sdp"], type=params["type"])
 
@@ -82,32 +88,9 @@ async def broadcast(websocket: WebSocket):
             params = await websocket.receive_text()
             params = json.loads(params)
 
-            pc = RTCPeerConnection({
-                "iceServers": [
-                    {
-                        "urls": "stun:stun.relay.metered.ca:80",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:80",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:80?transport=tcp",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:443",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                    {
-                        "urls": "turn:a.relay.metered.ca:443?transport=tcp",
-                        "username": "4800bcc1d14897cc749c5f50",
-                        "credential": "5oBep3xKuVgMh98x",
-                    },
-                ], })
+            # Create the RTCPeerConnection
+            pc = RTCPeerConnection(configuration=configuration)
+
             pc.on("track", handle_media_stream)
 
             offer = RTCSessionDescription(**params)

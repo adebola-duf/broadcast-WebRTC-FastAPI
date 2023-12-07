@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewer</title>
+    <!-- <script src='/static/viewer.js'></script>   -->
+</head>
+<body>
+    <h1>Viewer</h1>
+    <video autoplay id='video'></video>
+    <button id="my-button">View Stream</button>
+    <script>
+    let peer;
+    const socket_listener = new WebSocket(`ws://localhost:8000/consumer`);
+    console.log("This is ws: ", socket_listener);
+
+    window.onload = () => {
+        document.getElementById('my-button').onclick = () => {
+            init();
+        }
+    }
+
+    async function init() {
+        // On signalling channel open event
+
+        peer = createPeer();
+        peer.addTransceiver("video", { direction: "recvonly" })
+    }
+
+    function createPeer() {
+        const peer = new RTCPeerConnection({});
+        peer.ontrack = handleTrackEvent;
+        peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+
+        return peer;
+    }
+
+    async function handleNegotiationNeededEvent(peer) {
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        const payload = peer.localDescription //this is a dict containing type and sdp as keys
+        console.log(peer.localDescription);
+        socket_listener.send(JSON.stringify(payload));
+    }
+
+    function handleTrackEvent(e) {
+        document.getElementById("video").srcObject = e.streams[0];
+    };
+
+    socket_listener.onmessage = function (event) {
+        var message = event.data;
+        try {
+            var jsonMessage = JSON.parse(message);
+            console.log("Message is: ", jsonMessage, "message.sdp is ", jsonMessage.sdp);
+            const desc = new RTCSessionDescription(jsonMessage);
+            console.log("this is desc", desc)
+            peer.setRemoteDescription(desc).catch(e => console.log(e));
+        } catch (e) {
+            // If parsing as JSON fails, treat it as a text message
+            console.log(e);
+        }
+    };
+    </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ let viewersSocket = new WebSocket(`wss://${window.location.hostname}/viewer`);
 var peerConfiguration = {};
 
 (async() => {
-  const response = await fetch("https://first-webrtc-app.metered.live/api/v1/turn/credentials?apiKey=3e08a449e524357cc48147d16d2da0e6f960");
+  const response = await fetch("https://first-webrtc-app.metered.live/api/v1/turn/credentials?apiKey=df1e4b6b881387c5fb86162344907946ce62");
   const iceServers = response.data;
   peerConfiguration.iceServers = iceServers
 })();

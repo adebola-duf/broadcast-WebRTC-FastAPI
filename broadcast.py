@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, Request, WebSocketDisconn
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from aiortc import RTCPeerConnection, RTCSessionDescription, RTCConfiguration, MediaStreamTrack, RTCIceServer
+from aiortc import RTCPeerConnection, RTCSessionDescription, RTCConfiguration, MediaStreamTrack, RTCIceServer, RTCIceCandidate
 import json
 from dotenv import load_dotenv
 import os

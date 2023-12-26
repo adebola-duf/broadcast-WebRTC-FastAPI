@@ -1,12 +1,16 @@
 let loc = window.location;
-
-let BroadcasterSocket = new WebSocket(`ws://${window.location.hostname}:8000/broadcast`);
-let viewersSocket = new WebSocket(`ws://${window.location.hostname}:8000/viewer`);
-
+let BroadcasterSocket;
+let viewersSocket;
 if(loc.protocol === 'https:'){
     BroadcasterSocket = new WebSocket(`wss://${window.location.hostname}/broadcast`);
     viewersSocket = new WebSocket(`wss://${window.location.hostname}/viewer`);
 }
+else{
+    BroadcasterSocket = new WebSocket(`ws://${window.location.hostname}:8000/broadcast`);
+    viewersSocket = new WebSocket(`ws://${window.location.hostname}:8000/viewer`);
+
+}
+
 
 let peer, role;
 

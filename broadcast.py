@@ -12,6 +12,8 @@ turn_server_username = os.getenv("TURN_SERVER_USERNAME")
 turn_server_password = os.getenv("TURN_SERVER_PASSWORD")
 turn_servers: list[RTCIceServer] = [
     RTCIceServer(
+        urls="stun:stun.relay.metered.ca:80"),
+    RTCIceServer(
         urls=["turn:a.relay.metered.ca:80"],
         username=turn_server_username,
         credential=turn_server_password,

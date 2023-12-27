@@ -49,13 +49,28 @@ async function init() {
     }
 }
 
+const onIceCandidate = (event) => {
+    if (event.candidate) {
+        const jsonData = JSON.stringify({"data": {"type": "candidate", "candidate": event.candidate}})
+        if (role === "broadcaster"){
+            BroadcasterSocket.send(jsonData)
+        }
+        else if (role === "viewer"){
+            viewersSocket.send(jsonData)
+        }
+    }
+};
 function createPeer() {
     peer = new RTCPeerConnection(peerConfiguration);
-    if (role === "broadcaster")
+    if (role === "broadcaster"){
         peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+        peer.onicecandidate = onIceCandidate;
+    }
+    
     else if (role === "viewer"){
         peer.ontrack = handleTrackEvent;
         peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+        peer.onicecandidate = onIceCandidate;
     }
     return peer;
 }
@@ -66,14 +81,15 @@ async function handleNegotiationNeededEvent(peer) {
         await peer.setLocalDescription(offer);
         const payload = peer.localDescription //this is a dict containing type and sdp as keys
         console.log(peer.localDescription);
-        BroadcasterSocket.send(JSON.stringify(payload));
+        const jsonData = JSON.stringify({"data": payload})
+        BroadcasterSocket.send(jsonData);
     } else if (role === "viewer") {
         console.log("Creating Offer...");
         const offer = await peer.createOffer();
         await peer.setLocalDescription(offer);
         const payload = peer.localDescription //this is a dict containing type and sdp as keys
-        console.log(peer.localDescription);
-        viewersSocket.send(JSON.stringify(payload));
+        const jsonData = JSON.stringify({"data": payload})
+        viewersSocket.send(jsonData);
     }
 }
 
@@ -90,7 +106,7 @@ BroadcasterSocket.onmessage = function (event) {
     try {
         var jsonMessage = JSON.parse(event.data);
         console.log("Broadcaster Message: ", jsonMessage);
-        const desc = new RTCSessionDescription(jsonMessage);
+        const desc = new RTCSessionDescription(jsonMessage.data);
         peer.setRemoteDescription(desc).catch(e => console.log(e));
     } catch (e) {
         console.error(e);
@@ -101,7 +117,7 @@ viewersSocket.onmessage = function (event) {
     try {
         var jsonMessage = JSON.parse(event.data);
         console.log("Viewer Message: ", jsonMessage);
-        const desc = new RTCSessionDescription(jsonMessage);
+        const desc = new RTCSessionDescription(jsonMessage.data);
         peer.setRemoteDescription(desc).catch(e => console.log(e));
     } catch (e) {
         console.error(e);
